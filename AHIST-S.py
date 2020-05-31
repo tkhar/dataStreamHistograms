@@ -124,4 +124,5 @@ def AHIST_S(tokens, B, delta):
 
 if __name__ == "__main__":
     #HB = hb.Bucket_hist(16, 3)
-    AHIST_S(list(range(1, 17)), 5, 0.99)
+    # when B = 3, we have only 2 buckets
+    AHIST_S(list(range(1, 17)), 3, 0.99)
