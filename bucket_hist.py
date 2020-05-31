@@ -1,4 +1,5 @@
 # The class representing the histogram H_B
+# To Be Finished
 
 class Bucket_hist:
     def __init__(self, stream_length, bins):
