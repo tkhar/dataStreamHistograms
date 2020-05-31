@@ -21,7 +21,4 @@ class Bucket_hist:
                 # return bucket index and estimate value
                 return i, self.hr[i]
 
-    # def update(self):
-    # to be finished
-
     # def read_data(self):
