@@ -1,6 +1,6 @@
 # The class representing the histogram H_B
 
-class Bucket_hist(object):
+class Bucket_hist:
     def __init__(self, stream_length, bins):
         self.stream_length = stream_length
         self.bins = bins
@@ -14,7 +14,7 @@ class Bucket_hist(object):
         # find the bucket where the index falls in
         # poorman version
         for i in range(self.bins):
-            if self.start_r[i] <= index <= self.end_r[i]:
+            if index <= self.end_r[i]:
                 print("index: " + i)
                 print("estimate value:" + self.hr[i])
                 # return bucket index and estimate value
@@ -22,3 +22,5 @@ class Bucket_hist(object):
 
     # def update(self):
     # to be finished
+
+    # def read_data(self):
