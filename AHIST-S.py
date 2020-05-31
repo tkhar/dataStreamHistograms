@@ -78,19 +78,36 @@ def AHIST_S(tokens, B, delta):
 
     def construct_buckets(max_index, opt_err_sub):
         start_r = []
+        end_r = []
         for i in range(B):
             start_r.append(0)
+            end_r.append(0)
 
         start_r[B-1] = max_index
+        end_r[B-1] = len(tokens)-1
         b_idx = B-2
-        while b_idx >= 0:
+
+        total_sum = my_sum
+        total_sqsum = sqsum
+        # calculate start indices for each bucket
+        # reversely find every index bound that optimizes the square error
+        while b_idx > 0:
             for (ai, bi, apx_err_sub, sub_sum, sub_sqsum) in Q[b_idx]:
-                if apx_err_sub == opt_err_sub :
+
+                if apx_err_sub == opt_err_sub:
                     start_r[b_idx] = bi
+                    opt_err_sub = opt_err_sub - sq_err(bi, end_r[b_idx], sub_sum, total_sum, sub_sqsum, total_sqsum)
+                    total_sum = sub_sum
+                    total_sqsum = sub_sqsum
+
                     break
+
+            end_r[b_idx] = max(start_r[b_idx + 1] - 1, 0)
             b_idx = b_idx - 1
+
+        # calculate h_r(mean of values of x_i in bucket r)
         for i in range(B):
-            print("index of bucket " + str(i) + ": " + str(start_r[i]))
+            print("bucket " + str(i) + ": " + str(start_r[i]) + " - " + str(end_r[i]))
 
 
     def output():
