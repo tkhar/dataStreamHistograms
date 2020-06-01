@@ -1,6 +1,8 @@
 # The class representing the histogram H_B
 # To Be Finished
-#import numpy as np
+import numpy as np
+import pandas as pd
+import setup
 
 class Bucket_hist:
     def __init__(self, bins):
@@ -17,7 +19,7 @@ class Bucket_hist:
         # estimate value of each bucket
 
         self.tokens = []
-        self.read_data()
+        #self.read_data()
 
     def query(self, index):
         # find the bucket where the index falls in
@@ -29,12 +31,15 @@ class Bucket_hist:
                 # return bucket index and estimate value
                 return i, self.hr[i]
 
-    def read_data(self):
+    def read_data(self, csv_file, title):
         # temporarily generate an array
-        n = 21
-        for i in range(n):
-            self.tokens.append(i)
-        self.stream_length = n
+        # n = 21
+        # for i in range(n):
+        #     self.tokens.append(i)
+        # self.stream_length = n
+        df = pd.read_csv(csv_file)
+        self.tokens = list(df[title])
+        self.stream_length = len(self.tokens)
 
     def AHIST_S(self, delta):
         ## Initialize:
@@ -135,7 +140,7 @@ class Bucket_hist:
                 self.start_r[b_idx] = 0
             elif b_idx > 0:
                 for (ai, bi, apx_err_sub, sub_sum, sub_sqsum, start_err) in Q[b_idx + 1]:
-                    if apx_err_sub == opt_err_sub:
+                    if -delta < apx_err_sub - opt_err_sub < delta:
                         self.start_r[b_idx] = bi
                         self.end_r[b_idx - 1] = bi - 1
                         break
@@ -150,7 +155,7 @@ class Bucket_hist:
                         else:
                             approx_sq_err = sq_err_interval(bi, self.end_r[b_idx])
                             tmp_err = apx_err_sub + approx_sq_err
-                        if tmp_err == opt_err_sub:
+                        if -delta < tmp_err - opt_err_sub < delta:
                             self.start_r[b_idx] = bi
                             opt_err_sub = apx_err_sub
                             break
@@ -158,25 +163,26 @@ class Bucket_hist:
 
             self.end_r[b_idx] = max(self.start_r[b_idx + 1] - 1, 0)
             # calculate h_r(mean of values of x_i in bucket r)
-            for i in range(B):
-                print("bucket " + str(i) + ": " + str(self.start_r[i]) + " - " + str(self.end_r[i]))
+           # for i in range(B):
+                #print("bucket " + str(i) + ": " + str(self.start_r[i]) + " - " + str(self.end_r[i]))
 
         def calculate_bucket_means():
             for b in range(B):
                 tmp_sum = 0
                 for j in range(self.start_r[b], self.end_r[b]+1):
                     tmp_sum += self.tokens[j]
-                self.hr[b] = tmp_sum/(self.end_r[b] - self.start_r[b] + 1)
+                    self.hr[b] = tmp_sum/(self.end_r[b] - self.start_r[b] + 1)
                 #print(self.hr[b])
+            # for b in range(B):
+            #     self.hr[b] = np.mean(self.tokens[self.start_r[b]: self.end_r[b]])
+            #     print(self.hr[b])
 
         for j in range(len(self.tokens)):
             process(j)
         construct_buckets(max_index, optimal_sub)
         calculate_bucket_means()
+        #for q in Q:
+         #   print(q)
 
-if __name__ == "__main__":
-    B = 3
-    delta = 0.99
-    H = Bucket_hist(B)
-    H.AHIST_S(0.99)
+
 
