@@ -51,11 +51,9 @@ def AHIST_S(tokens, B, delta):
                     #print("ai, bi, apx_err_sub, sub_sum, sub_sqsum: " + str(ai) + "," + str(bi) + ","
                           # + str(apx_err_sub) + "," + str(sub_sum) + "," + str(sub_sqsum))
 
-                    if bi <= j:
-                        tmp_sq_err = sq_err(bi, j, sub_sum, my_sum, sub_sqsum, sqsum)
+                    if bi < j:
+                        tmp_sq_err = sq_err(bi+1, j, sub_sum, my_sum, sub_sqsum, sqsum)
                         tmp_apx_err = apx_err_sub + tmp_sq_err
-                        # print("tmp_sq_err: " + str(tmp_sq_err))
-                        # print("tmp_apx_err:" + str(tmp_apx_err))
                         apx_err = min(apx_err, tmp_apx_err)
 
                     # constructing histogram buckets
@@ -66,10 +64,11 @@ def AHIST_S(tokens, B, delta):
                             max_index = bi + 1
                             tmp_sum = sub_sum
                             tmp_sqsum = sub_sqsum
+                            print("bi = " + str(bi))
+                            print("tmp_sq_err: " + str(tmp_sq_err))
+                            print("tmp_apx_err:" + str(tmp_apx_err))
                             #HB.start_r[B-1] = index
                         #print("index: " + str(index))
-
-
 
                     # apx_err_cand = apx_err_sub + sq_err(bi, j, sub_sum, my_sum, sub_sqsum, sqsum)
                 #   if apx_err_cand < apx_err:
@@ -91,22 +90,22 @@ def AHIST_S(tokens, B, delta):
             if len(Q[k]) == 0:
                 # 6th element is to record the approx. error of the start index of the interval
                 # used when deciding whether to add a new interval
-                Q[k].append([j, j, apx_err, previous_sum, previous_sqsum, apx_err])
+                Q[k].append([j, j, apx_err, my_sum, sqsum, apx_err])
                 # debug
                 #print("Q[" + str(k) + "] add: " +str(j) + "," + str(j) + ","
                 #          + str(apx_err) + "," + str(my_sum) + "," + str(sqsum))
 
             # Insert as new interval.
             elif k <= B - 1  and apx_err > (1.0 + delta) * Q[k][-1][5]:  # apx_err_sub
-                Q[k].append([j, j, apx_err, previous_sum, previous_sqsum, apx_err])
+                Q[k].append([j, j, apx_err, my_sum, sqsum, apx_err])
                 #print("Q[" + str(k) + "] add: " + str(j) + "," + str(j) + ","
                  #     + str(apx_err) + "," + str(my_sum) + "," + str(sqsum))
             # Expand current last interval
             else:
                 Q[k][-1][1] = j
                 Q[k][-1][2] = apx_err
-                Q[k][-1][3] = previous_sum
-                Q[k][-1][4] = previous_sqsum
+                Q[k][-1][3] = my_sum
+                Q[k][-1][4] = sqsum
                 if apx_err == float('inf'):
                     Q[k][-1][5] = apx_err
                 #print("Q[" + str(k) +"] expanded to " + str(j))
@@ -114,7 +113,7 @@ def AHIST_S(tokens, B, delta):
             # if k == 1:
                 #print("APR[" + str(j) +"," + str(k) + "] = " + str(apx_err))
 
-    def construct_buckets(max_index, opt_err_sub, tmp_sum, tmp_sqsum):
+    def construct_buckets(max_index, opt_err_sub):
         start_r = []
         end_r = []
         for i in range(B):
@@ -127,7 +126,6 @@ def AHIST_S(tokens, B, delta):
 
         # calculate start indices for each bucket
         # reversely find every index bound that optimizes the square error
-        previous_ai = 0
         previous_bi = 0
         previous_apx_err = 0.0
         while b_idx >= 1:
@@ -142,7 +140,6 @@ def AHIST_S(tokens, B, delta):
                     #tmp_sqsum = sub_sqsum
                     break
 
-                previous_ai = ai
                 previous_bi = bi
                 previous_apx_err = apx_err_sub
             b_idx = b_idx - 1
@@ -158,7 +155,7 @@ def AHIST_S(tokens, B, delta):
 
     for j in range(len(tokens)):
         process(j)
-    construct_buckets(max_index, optimal_sub, tmp_sum, tmp_sqsum)
+    construct_buckets(max_index, optimal_sub)
 
     print(output())
     for q in Q:
@@ -167,4 +164,6 @@ def AHIST_S(tokens, B, delta):
 
 if __name__ == "__main__":
     #HB = hb.Bucket_hist(16, 3)
-    AHIST_S(list(range(1, 100)), 8, 0.99)
+    tokens = [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,19]
+    AHIST_S(tokens, 2, 0.99)
+    #AHIST_S(list(range(1, 100)), 8, 0.99)
