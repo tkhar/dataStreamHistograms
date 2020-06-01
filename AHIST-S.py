@@ -20,7 +20,7 @@ def AHIST_S(tokens, B, delta):
     # as shown in paper. Guha et. al 2006
     def sq_err(s, e, s_sum, e_sum, s_sqsum, e_sqsum):
         return ((e_sqsum - s_sqsum)
-                - (1 / (e - s + 1)) * (e_sum - s_sum) ** 2)
+                - (1.0 / (e - s + 1.0)) * (e_sum - s_sum) ** 2)
 
     def process(j):
         nonlocal my_sum, sqsum, apx_err
@@ -37,7 +37,7 @@ def AHIST_S(tokens, B, delta):
         # print("j = " + str(j))
         # Fill up error approximation matrix minimize
         # apx error.
-        for k in range(2, B + 1):
+        for k in range(1, B + 1):
             apx_err = float('inf')
             optimal_err = apx_err
             optimal_sub = apx_err
@@ -45,8 +45,8 @@ def AHIST_S(tokens, B, delta):
             # debug
             # print("k = " + str(k))
 
-            if k > 2:
-                for (ai, bi, apx_err_sub, sub_sum, sub_sqsum) in Q[k - 1]:
+            if k > 1:
+                for (ai, bi, apx_err_sub, sub_sum, sub_sqsum, start_err) in Q[k - 1]:
                     # debug
                     #print("ai, bi, apx_err_sub, sub_sum, sub_sqsum: " + str(ai) + "," + str(bi) + ","
                           # + str(apx_err_sub) + "," + str(sub_sum) + "," + str(sub_sqsum))
@@ -88,14 +88,16 @@ def AHIST_S(tokens, B, delta):
             # Either expand range of last interval or insert as new interval
             # in Q[k].
             if len(Q[k]) == 0:
-                Q[k].append([j, j, apx_err, previous_sum, previous_sqsum])
+                # 6th element is to record the approx. error of the start index of the interval
+                # used when deciding whether to add a new interval
+                Q[k].append([j, j, apx_err, previous_sum, previous_sqsum, apx_err])
                 # debug
                 #print("Q[" + str(k) + "] add: " +str(j) + "," + str(j) + ","
                 #          + str(apx_err) + "," + str(my_sum) + "," + str(sqsum))
 
             # Insert as new interval.
-            elif k <= B - 1 and apx_err > (1 + delta) * Q[k][-1][2]:  # apx_err_sub
-                Q[k].append([j, j, apx_err, previous_sum, previous_sqsum])
+            elif k <= B - 1  and apx_err > (1.0 + delta) * Q[k][-1][5]:  # apx_err_sub
+                Q[k].append([j, j, apx_err, previous_sum, previous_sqsum, apx_err])
                 #print("Q[" + str(k) + "] add: " + str(j) + "," + str(j) + ","
                  #     + str(apx_err) + "," + str(my_sum) + "," + str(sqsum))
             # Expand current last interval
@@ -105,6 +107,9 @@ def AHIST_S(tokens, B, delta):
                 Q[k][-1][3] = previous_sum
                 Q[k][-1][4] = previous_sqsum
                 #print("Q[" + str(k) +"] expanded to " + str(j))
+            # debug
+            # if k == 1:
+                #print("APR[" + str(j) +"," + str(k) + "] = " + str(apx_err))
 
     def construct_buckets(max_index, opt_err_sub):
         start_r = []
@@ -121,9 +126,8 @@ def AHIST_S(tokens, B, delta):
         total_sqsum = sqsum
         # calculate start indices for each bucket
         # reversely find every index bound that optimizes the square error
-        # we don't construct Q[1]
         while b_idx > 1:
-            for (ai, bi, apx_err_sub, sub_sum, sub_sqsum) in Q[b_idx]:
+            for (ai, bi, apx_err_sub, sub_sum, sub_sqsum, start_err) in Q[b_idx]:
 
                 if apx_err_sub == opt_err_sub and bi < start_r[b_idx+1]:
                     start_r[b_idx] = bi
@@ -147,7 +151,7 @@ def AHIST_S(tokens, B, delta):
 
     for j in range(len(tokens)):
         process(j)
-    construct_buckets(max_index, optimal_sub)
+    #construct_buckets(max_index, optimal_sub)
 
     print(output())
     for q in Q:
@@ -156,5 +160,4 @@ def AHIST_S(tokens, B, delta):
 
 if __name__ == "__main__":
     #HB = hb.Bucket_hist(16, 3)
-    # when B = 3, we have only 2 buckets
     AHIST_S(list(range(1, 17)), 5, 0.99)
