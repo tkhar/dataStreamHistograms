@@ -39,6 +39,8 @@ class Bucket_hist:
         # for i in range(n):
         #     self.tokens.append(i)
         # self.stream_length = n
+        # self.tokens = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 19]
+        # self.stream_length = 17
         df = pd.read_csv(csv_file)
         self.tokens = list(df[title])
         self.stream_length = len(self.tokens)
@@ -132,35 +134,44 @@ class Bucket_hist:
             self.end_r[B - 1] = len(self.tokens) - 1
             self.end_r[B - 2] = max_index - 1
             b_idx = B - 2
-
+            epsilon = 0.5
             # calculate start indices for each bucket
             # reversely find every index bound that optimizes the square error
 
             # there's an exact same approx error for bucket_{B-2}
             # without calculating the sq_err
-            if b_idx == 0:
-                self.start_r[b_idx] = 0
-            elif b_idx > 0:
-                for (ai, bi, apx_err_sub, sub_sum, sub_sqsum, start_err) in Q[b_idx + 1]:
-                    if -delta < apx_err_sub - opt_err_sub < delta:
-                        self.start_r[b_idx] = bi
-                        self.end_r[b_idx - 1] = bi - 1
-                        break
-                b_idx = b_idx - 1
+            # if b_idx == 0:
+            #     self.start_r[b_idx] = 0
+            # elif b_idx > 0:
+            #     for (ai, bi, apx_err_sub, sub_sum, sub_sqsum, start_err) in Q[b_idx + 1]:
+            #         if  -epsilon < apx_err_sub - opt_err_sub < epsilon:
+            #             self.start_r[b_idx] = bi
+            #             self.end_r[b_idx - 1] = bi - 1
+            #             break
+            #     b_idx = b_idx - 1
+
 
             while b_idx > 0:
                 self.end_r[b_idx] = max(self.start_r[b_idx + 1] - 1, 0)
+                previous_sub_err = opt_err_sub
+                previous_bi = 0
                 for (ai, bi, apx_err_sub, sub_sum, sub_sqsum, start_err) in Q[b_idx + 1]:
-                    if bi <= self.end_r[b_idx] and apx_err_sub <= opt_err_sub:
+                    #if bi < self.end_r[b_idx]:
+                    if apx_err_sub <= opt_err_sub:
                         if bi == self.end_r[b_idx]:
                             tmp_err = apx_err_sub
                         else:
                             approx_sq_err = sq_err_interval(bi, self.end_r[b_idx])
                             tmp_err = apx_err_sub + approx_sq_err
-                        if -delta < tmp_err - opt_err_sub < delta:
+                            sub_err = tmp_err - opt_err_sub
+                            # when previous err sub is positive, and current one is negative,
+                            # the division index lies between
+                        if sub_err <= 0.0:
                             self.start_r[b_idx] = bi
                             opt_err_sub = apx_err_sub
                             break
+                        previous_bi = bi
+                        previous_sub_err = sub_err
                 b_idx = b_idx - 1
 
             self.end_r[b_idx] = max(self.start_r[b_idx + 1] - 1, 0)
@@ -184,8 +195,8 @@ class Bucket_hist:
             process(j)
         construct_buckets(max_index, optimal_sub)
         calculate_bucket_means()
-        # for q in Q:
-        #   print(q)
+        #for q in Q:
+           #print(q)
 
     def show_plot(self, title, xlabel, ylabel):
         # reference: https://realpython.com/python-histograms/
