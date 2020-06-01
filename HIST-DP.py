@@ -5,12 +5,10 @@ def v_opt(tokens, B):
   sum = [0 for _ in range(n)]
   sqsum = [0 for _ in range(n)]
   t_err = [[0 for _ in range(B)] for _ in range(n)]
-  sqErr = [[0 for _ in range(n)] for _ in range(n)]
 
   def sq_err(s, e, sum_range, sqsum_range):
     val = (sqsum_range
             - (1 / (e - s + 1)) * (sum_range) ** 2)
-    sqErr[s][e] = val
     # print(s,e,val)
     return val
 
@@ -43,11 +41,7 @@ def v_opt(tokens, B):
         break
     j = i
     k = k - 1
-
-  print(sum)
-  print(sqsum)
-  # for line in sqErr:
-  #   print(line)
+    
     
 
 

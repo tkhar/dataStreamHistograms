@@ -8,6 +8,7 @@ def extract_us():
   us_df['new_cases'] = us_df['cases'] - us_df['cases'].shift(1)
   us_df['new_cases'].iloc[0] = us_df['cases'].iloc[0]  # First day new cases is just case number
   us_df['new_deaths'] = us_df['deaths'] - us_df['deaths'].shift(1)
+  us_df['new_deaths'].iloc[0] = us_df['deaths'].iloc[0]  # First day new deaths is just death number
 
   us_df.to_csv('./stripped_data/us-cases-deaths.csv')
 
