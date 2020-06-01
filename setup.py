@@ -14,6 +14,13 @@ def get_china_deaths():
   df = pd.read_csv('stripped_data/china-cases-deaths.csv')
   return list(df['deaths'])
 
+def get_china_new_cases():
+  df = pd.read_csv('stripped_data/china-cases-deaths.csv')
+  return list(df['new_cases'])
+
+def get_china_new_deaths():
+  df = pd.read_csv('stripped_data/china-cases-deaths.csv')
+  return list(df['new_deaths'])
 
 def get_us_dates():
   df = pd.read_csv('stripped_data/us-cases-deaths.csv')
@@ -27,12 +34,24 @@ def get_us_deaths():
   df = pd.read_csv('stripped_data/us-cases-deaths.csv')
   return list(df['deaths'])
 
+def get_us_new_cases():
+  df = pd.read_csv('stripped_data/us-cases-deaths.csv')
+  return list(df['new_cases'])
+
+def get_us_new_deaths():
+  df = pd.read_csv('stripped_data/us-cases-deaths.csv')
+  return list(df['new_deaths'])
+
 
 # Test
 if __name__ == "__main__":
-  print(get_china_dates())
+  # print(get_china_dates())
   print(get_china_cases())
   print(get_china_deaths())
-  print(get_us_dates())
+  print(get_china_new_cases())
+  print(get_china_new_deaths())
+  # print(get_us_dates())
   print(get_us_cases())
   print(get_us_deaths())
+  print(get_us_new_cases())
+  print(get_us_new_deaths())
