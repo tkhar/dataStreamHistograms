@@ -172,6 +172,8 @@ class Bucket_hist:
                             break
                         previous_bi = bi
                         previous_sub_err = sub_err
+                        #assign it to last bi if sub_err always > 0
+                        self.start_r[b_idx] = bi
                 b_idx = b_idx - 1
 
             self.end_r[b_idx] = max(self.start_r[b_idx + 1] - 1, 0)
