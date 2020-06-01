@@ -38,8 +38,8 @@ def AHIST_S(tokens, B, delta):
         nonlocal max_index, optimal_sub, tmp_sum, tmp_sqsum
         # Maintain running sum and running square sum for
         # sqerror calculations.
-        previous_sum = my_sum
-        previous_sqsum = sqsum
+        # previous_sum = my_sum
+        # previous_sqsum = sqsum
         my_sum += tokens[j]
         sqsum += tokens[j] * tokens[j]
 
@@ -135,8 +135,8 @@ def AHIST_S(tokens, B, delta):
 
         # calculate start indices for each bucket
         # reversely find every index bound that optimizes the square error
-        previous_bi = 0
-        previous_apx_err = 0.0
+        # previous_bi = 0
+        # previous_apx_err = 0.0
 
         # there's an exact same approx error for bucket_{B-2}
         if b_idx == 0:
@@ -146,8 +146,8 @@ def AHIST_S(tokens, B, delta):
                 if apx_err_sub == opt_err_sub:
                     start_r[b_idx] = bi
                     end_r[b_idx - 1] = bi - 1
-                    tmp_sum = sub_sum
-                    tmp_sqsum = sub_sqsum
+                    # tmp_sum = sub_sum
+                    # tmp_sqsum = sub_sqsum
                     break
             b_idx = b_idx - 1
 
@@ -166,10 +166,10 @@ def AHIST_S(tokens, B, delta):
                         #start_r[b_idx] = previous_bi
                         start_r[b_idx] = bi
                         opt_err_sub = apx_err_sub
-                        #opt_err_sub = previous_apx_err # might be one index biased
-                        #opt_err_sub = opt_err_sub - sq_err(bi, end_r[b_idx], sub_sum, tmp_sum, sub_sqsum, tmp_sqsum)
-                        tmp_sum = sub_sum
-                        tmp_sqsum = sub_sqsum
+                        # opt_err_sub = previous_apx_err # might be one index biased
+                        # opt_err_sub = opt_err_sub - sq_err(bi, end_r[b_idx], sub_sum, tmp_sum, sub_sqsum, tmp_sqsum)
+                        # tmp_sum = sub_sum
+                        # tmp_sqsum = sub_sqsum
                         break
                 #previous_bi = bi
                 #previous_apx_err = apx_err_sub
@@ -197,4 +197,4 @@ if __name__ == "__main__":
     #HB = hb.Bucket_hist(16, 3)
     tokens = [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,19]
     #AHIST_S(tokens, 5, 0.99)
-    AHIST_S(list(range(1, 100)), 20, 0.99)
+    AHIST_S(list(range(1, 1000)), 20, 0.99)
