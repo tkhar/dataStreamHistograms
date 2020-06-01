@@ -1,8 +1,10 @@
 # The class representing the histogram H_B
 # To Be Finished
 import numpy as np
+from numpy import histogram, allclose
 import pandas as pd
-import setup
+import matplotlib.pyplot as plt
+
 
 class Bucket_hist:
     def __init__(self, bins):
@@ -19,7 +21,7 @@ class Bucket_hist:
         # estimate value of each bucket
 
         self.tokens = []
-        #self.read_data()
+        # self.read_data()
 
     def query(self, index):
         # find the bucket where the index falls in
@@ -163,16 +165,17 @@ class Bucket_hist:
 
             self.end_r[b_idx] = max(self.start_r[b_idx + 1] - 1, 0)
             # calculate h_r(mean of values of x_i in bucket r)
-           # for i in range(B):
-                #print("bucket " + str(i) + ": " + str(self.start_r[i]) + " - " + str(self.end_r[i]))
+
+        # for i in range(B):
+        # print("bucket " + str(i) + ": " + str(self.start_r[i]) + " - " + str(self.end_r[i]))
 
         def calculate_bucket_means():
             for b in range(B):
                 tmp_sum = 0
-                for j in range(self.start_r[b], self.end_r[b]+1):
+                for j in range(self.start_r[b], self.end_r[b] + 1):
                     tmp_sum += self.tokens[j]
-                    self.hr[b] = tmp_sum/(self.end_r[b] - self.start_r[b] + 1)
-                #print(self.hr[b])
+                    self.hr[b] = tmp_sum / (self.end_r[b] - self.start_r[b] + 1)
+                # print(self.hr[b])
             # for b in range(B):
             #     self.hr[b] = np.mean(self.tokens[self.start_r[b]: self.end_r[b]])
             #     print(self.hr[b])
@@ -181,8 +184,17 @@ class Bucket_hist:
             process(j)
         construct_buckets(max_index, optimal_sub)
         calculate_bucket_means()
-        #for q in Q:
-         #   print(q)
+        # for q in Q:
+        #   print(q)
 
-
-
+    def show_plot(self, title, xlabel, ylabel):
+        # reference: https://realpython.com/python-histograms/
+        #           https://github.com/carsonfarmer/streamhist
+        #           https://matplotlib.org/tutorials/introductory/pyplot.html
+        #size, scale = self.tokens, self.bins
+        plt.title(title)
+        plt.xlabel(xlabel)
+        plt.ylabel(ylabel)
+        plt.grid(axis='y')
+        plt.bar(self.start_r, self.hr)
+        plt.show()
