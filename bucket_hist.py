@@ -1,10 +1,5 @@
 # The class representing the histogram H_B
-# To Be Finished
-import numpy as np
-from numpy import histogram, allclose
 import pandas as pd
-import matplotlib.pyplot as plt
-
 
 class Bucket_hist:
     def __init__(self, bins):
@@ -23,6 +18,7 @@ class Bucket_hist:
         self.tokens = []
         # self.read_data()
 
+    # answer query
     def query(self, index):
         # find the bucket where the index falls in
         # poorman version
@@ -33,6 +29,7 @@ class Bucket_hist:
                 # return bucket index and estimate value
                 return i, self.hr[i]
 
+    # read data from csv file
     def read_data(self, csv_file, title):
         # temporarily generate an array
         # n = 21
@@ -45,6 +42,7 @@ class Bucket_hist:
         self.tokens = list(df[title])
         self.stream_length = len(self.tokens)
 
+    # run AHIST_S with parameter delta
     def AHIST_S(self, delta):
         ## Initialize:
         # Q[k] represents intervals for k buckets
@@ -189,9 +187,6 @@ class Bucket_hist:
                     tmp_sum += self.tokens[j]
                     self.hr[b] = tmp_sum / (self.end_r[b] - self.start_r[b] + 1)
                 # print(self.hr[b])
-            # for b in range(B):
-            #     self.hr[b] = np.mean(self.tokens[self.start_r[b]: self.end_r[b]])
-            #     print(self.hr[b])
 
         for j in range(len(self.tokens)):
             process(j)
@@ -200,14 +195,75 @@ class Bucket_hist:
         #for q in Q:
            #print(q)
 
-    def show_plot(self, title, xlabel, ylabel):
-        # reference: https://realpython.com/python-histograms/
-        #           https://github.com/carsonfarmer/streamhist
-        #           https://matplotlib.org/tutorials/introductory/pyplot.html
-        #size, scale = self.tokens, self.bins
-        plt.title(title)
-        plt.xlabel(xlabel)
-        plt.ylabel(ylabel)
-        plt.grid(axis='y')
-        plt.bar(self.start_r, self.hr)
-        plt.show()
+    # run v-optimal (dynamic programming) without approximation
+    def HIST_DP(self):
+        B = self.bins
+        n = len(self.tokens)
+        sum = [0 for _ in range(n)]
+        sqsum = [0 for _ in range(n)]
+        t_err = [[0 for _ in range(B)] for _ in range(n)]
+
+        def sq_err(s, e, sum_range, sqsum_range):
+            val = (sqsum_range
+                   - (1 / (e - s + 1)) * (sum_range) ** 2)
+            return val
+
+        # Base cases
+        sum[0] = self.tokens[0]
+        sqsum[0] = self.tokens[0] * self.tokens[0]
+        for i in range(1, n):
+            sum[i] = sum[i - 1] + self.tokens[i]
+            sqsum[i] = sqsum[i - 1] + self.tokens[i] ** 2
+            # One bucket.
+            t_err[i][0] = sq_err(0, i, sum[i], sqsum[i])
+
+        for j in range(n):
+            # t_err[j][1:] = [float('inf')] * len(t_err[j])
+            for k in range(1, B):
+                t_err[j][k] = float('inf')
+                for i in range(j):
+                    t_err[j][k] = min(t_err[j][k],
+                                      t_err[i][k - 1] + sq_err(i + 1, j, sum[j] - sum[i], sqsum[j] - sqsum[i]))
+
+        # Recovery
+
+        j = n - 1
+        k = B - 1
+        self.end_r[k] = n-1
+        #print("Min error:", t_err[j][k])
+        while k > 0:
+            for i in range(j):
+                if t_err[j][k] == t_err[i][k - 1] + sq_err(i + 1, j, sum[j] - sum[i], sqsum[j] - sqsum[i]):
+                    #print("Split at index: ", i)
+                    self.start_r[k] = i
+                    self.end_r[k-1] = i-1
+                    break
+            j = i
+            k = k - 1
+
+        #def calculate_bucket_means():
+        #calculate means of each bucket
+        for b in range(B):
+            tmp_sum = 0
+            for j in range(self.start_r[b], self.end_r[b] + 1):
+                tmp_sum += self.tokens[j]
+                self.hr[b] = tmp_sum / (self.end_r[b] - self.start_r[b] + 1)
+    # def show_plot(self, title, xlabel, ylabel):
+    #     # reference: https://realpython.com/python-histograms/
+    #     #           https://github.com/carsonfarmer/streamhist
+    #     #           https://matplotlib.org/tutorials/introductory/pyplot.html
+    #     #size, scale = self.tokens, self.bins
+    #     plt.title(title)
+    #     plt.xlabel(xlabel)
+    #     plt.ylabel(ylabel)
+    #     plt.grid(axis='y')
+    #     plt.bar(self.start_r, self.hr)
+    #     plt.show()
+    # calculate new cases
+
+    def calculate_increment(self):
+        new_tokens = []
+        new_tokens.append(self.tokens[0])
+        for i in range(1, self.stream_length):
+            new_tokens.append(self.tokens[i] - self.tokens[i-1])
+        self.tokens = new_tokens
